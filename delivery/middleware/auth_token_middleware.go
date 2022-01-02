@@ -44,7 +44,8 @@ func (a *AuthTokenMiddleware) RequireToken() gin.HandlerFunc {
 				return
 			}
 			token, err := a.acctToken.VerifyAccessToken(tokenString)
-			if err != nil {
+			userId, err := a.acctToken.FetchAccessToken(token)
+			if userId == "" || err != nil {
 				c.JSON(401, gin.H{
 					"message": "Unauthorized",
 				})
@@ -53,6 +54,7 @@ func (a *AuthTokenMiddleware) RequireToken() gin.HandlerFunc {
 			}
 			fmt.Println(token)
 			if token != nil {
+				c.Set("user-id", userId)
 				c.Next()
 			} else {
 				c.JSON(401, gin.H{
