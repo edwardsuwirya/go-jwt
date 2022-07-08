@@ -10,18 +10,20 @@ import (
 type authHeader struct {
 	AuthorizationHeader string `header:"Authorization"`
 }
-
-type AuthTokenMiddleware struct {
+type AuthTokenMiddleware interface {
+	RequireToken() gin.HandlerFunc
+}
+type authTokenMiddleware struct {
 	acctToken authenticator.Token
 }
 
-func NewTokenValidator(acctToken authenticator.Token) *AuthTokenMiddleware {
-	return &AuthTokenMiddleware{
+func NewTokenValidator(acctToken authenticator.Token) AuthTokenMiddleware {
+	return &authTokenMiddleware{
 		acctToken: acctToken,
 	}
 }
 
-func (a *AuthTokenMiddleware) RequireToken() gin.HandlerFunc {
+func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h := authHeader{}
 		if err := c.ShouldBindHeader(&h); err != nil {
