@@ -27,9 +27,11 @@ func main() {
 			token, err := tokenService.CreateAccessToken(&user)
 			if err != nil {
 				c.AbortWithStatus(401)
+				return
 			}
+			c.SetCookie("token", token, 5, "/", "localhost", false, true)
 			c.JSON(200, gin.H{
-				"token": token,
+				"message": "Success",
 			})
 		} else {
 			c.AbortWithStatus(401)
@@ -37,7 +39,7 @@ func main() {
 
 	})
 
-	protectedGroup := publicRoute.Group("/protected", mdw.NewTokenValidator(tokenService).RequireToken())
+	protectedGroup := publicRoute.Group("/protected", mdw.NewTokenCookieValidator(tokenService).RequireToken())
 	protectedGroup.GET("/user", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "user",
