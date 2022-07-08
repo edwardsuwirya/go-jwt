@@ -2,24 +2,18 @@ package main
 
 import (
 	"enigmacamp.com/gojwt/authenticator"
+	"enigmacamp.com/gojwt/config"
 	mdw "enigmacamp.com/gojwt/delivery/middleware"
 	"enigmacamp.com/gojwt/model"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"net/http"
-	"time"
 )
 
 func main() {
 	r := gin.Default()
-	tokenConfig := authenticator.TokenConfig{
-		ApplicationName:     "ENIGMA",
-		JwtSignatureKey:     "P@ssw0rd",
-		JwtSigningMethod:    jwt.SigningMethodHS256,
-		AccessTokenLifeTime: 60 * time.Second,
-	}
-	tokenService := authenticator.NewTokenService(tokenConfig)
-	r.Use(mdw.NewTokenValidator(tokenService).RequireToken())
+	cfg := config.NewConfig()
+	tokenService := authenticator.NewTokenService(cfg.TokenConfig)
+
 	publicRoute := r.Group("/enigma")
 	publicRoute.POST("/auth", func(c *gin.Context) {
 		var user model.CredentialModel
@@ -42,7 +36,9 @@ func main() {
 		}
 
 	})
-	publicRoute.GET("/user", func(c *gin.Context) {
+
+	protectedGroup := publicRoute.Group("/protected", mdw.NewTokenValidator(tokenService).RequireToken())
+	protectedGroup.GET("/user", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "user",
 		})

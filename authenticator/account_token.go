@@ -1,6 +1,7 @@
 package authenticator
 
 import (
+	"enigmacamp.com/gojwt/config"
 	"enigmacamp.com/gojwt/model"
 	"fmt"
 	"github.com/golang-jwt/jwt"
@@ -13,29 +14,22 @@ type Token interface {
 	VerifyAccessToken(tokenString string) (jwt.MapClaims, error)
 }
 
-type TokenConfig struct {
-	ApplicationName     string
-	JwtSignatureKey     string
-	JwtSigningMethod    *jwt.SigningMethodHMAC
-	AccessTokenLifeTime time.Duration
-}
-
 type token struct {
-	Config TokenConfig
+	cfg config.TokenConfig
 }
 
-func NewTokenService(config TokenConfig) Token {
+func NewTokenService(config config.TokenConfig) Token {
 	return &token{
-		Config: config,
+		cfg: config,
 	}
 }
 
 func (t *token) CreateAccessToken(cred *model.CredentialModel) (string, error) {
 	now := time.Now().UTC()
-	end := now.Add(t.Config.AccessTokenLifeTime)
+	end := now.Add(t.cfg.AccessTokenLifeTime)
 	claims := MyClaims{
 		StandardClaims: jwt.StandardClaims{
-			Issuer: t.Config.ApplicationName,
+			Issuer: t.cfg.ApplicationName,
 		},
 		Username: cred.Username,
 		Email:    cred.Email,
@@ -43,24 +37,24 @@ func (t *token) CreateAccessToken(cred *model.CredentialModel) (string, error) {
 	claims.IssuedAt = now.Unix()
 	claims.ExpiresAt = end.Unix()
 	token := jwt.NewWithClaims(
-		t.Config.JwtSigningMethod,
+		t.cfg.JwtSigningMethod,
 		claims,
 	)
-	return token.SignedString([]byte(t.Config.JwtSignatureKey))
+	return token.SignedString([]byte(t.cfg.JwtSignatureKey))
 }
 
 func (t *token) VerifyAccessToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Signing method invalid")
-		} else if method != t.Config.JwtSigningMethod {
+		} else if method != t.cfg.JwtSigningMethod {
 			return nil, fmt.Errorf("Signing method invalid")
 		}
 
-		return []byte(t.Config.JwtSignatureKey), nil
+		return []byte(t.cfg.JwtSignatureKey), nil
 	})
 	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid || claims["iss"] != t.Config.ApplicationName {
+	if !ok || !token.Valid || claims["iss"] != t.cfg.ApplicationName {
 		log.Println("Token Invalid")
 		return nil, err
 	}

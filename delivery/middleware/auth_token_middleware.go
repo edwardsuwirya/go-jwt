@@ -23,44 +23,40 @@ func NewTokenValidator(acctToken authenticator.Token) *AuthTokenMiddleware {
 
 func (a *AuthTokenMiddleware) RequireToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.Path == "/enigma/auth" {
+		h := authHeader{}
+		if err := c.ShouldBindHeader(&h); err != nil {
+			c.JSON(401, gin.H{
+				"message": "Unauthorized",
+			})
+			c.Abort()
+			return
+		}
+		tokenString := strings.Replace(h.AuthorizationHeader, "Bearer ", "", -1)
+		fmt.Println(tokenString)
+		if tokenString == "" {
+			c.JSON(401, gin.H{
+				"message": "Unauthorized",
+			})
+			c.Abort()
+			return
+		}
+		token, err := a.acctToken.VerifyAccessToken(tokenString)
+		if err != nil {
+			c.JSON(401, gin.H{
+				"message": "Unauthorized",
+			})
+			c.Abort()
+			return
+		}
+		fmt.Println(token)
+		if token != nil {
 			c.Next()
 		} else {
-			h := authHeader{}
-			if err := c.ShouldBindHeader(&h); err != nil {
-				c.JSON(401, gin.H{
-					"message": "Unauthorized",
-				})
-				c.Abort()
-				return
-			}
-			tokenString := strings.Replace(h.AuthorizationHeader, "Bearer ", "", -1)
-			fmt.Println(tokenString)
-			if tokenString == "" {
-				c.JSON(401, gin.H{
-					"message": "Unauthorized",
-				})
-				c.Abort()
-				return
-			}
-			token, err := a.acctToken.VerifyAccessToken(tokenString)
-			if err != nil {
-				c.JSON(401, gin.H{
-					"message": "Unauthorized",
-				})
-				c.Abort()
-				return
-			}
-			fmt.Println(token)
-			if token != nil {
-				c.Next()
-			} else {
-				c.JSON(401, gin.H{
-					"message": "Unauthorized",
-				})
-				c.Abort()
-				return
-			}
+			c.JSON(401, gin.H{
+				"message": "Unauthorized",
+			})
+			c.Abort()
+			return
 		}
 	}
 }
