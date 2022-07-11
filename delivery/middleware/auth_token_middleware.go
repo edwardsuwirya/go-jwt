@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"enigmacamp.com/gojwt/authenticator"
+	"enigmacamp.com/gojwt/utils/authenticator"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strings"

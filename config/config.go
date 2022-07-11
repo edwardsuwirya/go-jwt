@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type ApiConfig struct {
+	ApiPort string
+	ApiHost string
+}
+
 type TokenConfig struct {
 	ApplicationName     string
 	JwtSignatureKey     string
@@ -13,11 +18,15 @@ type TokenConfig struct {
 }
 
 type Config struct {
+	ApiConfig
 	TokenConfig
 }
 
 func (c Config) readConfig() Config {
-
+	c.ApiConfig = ApiConfig{
+		ApiPort: "8888",
+		ApiHost: "localhost",
+	}
 	c.TokenConfig = TokenConfig{
 		ApplicationName:     "ENIGMA",
 		JwtSignatureKey:     "P@ssw0rd",

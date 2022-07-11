@@ -10,7 +10,7 @@ import (
 )
 
 type Token interface {
-	CreateAccessToken(cred *model.CredentialModel) (string, error)
+	CreateAccessToken(cred *model.UserCredential) (string, error)
 	VerifyAccessToken(tokenString string) (jwt.MapClaims, error)
 }
 
@@ -24,7 +24,7 @@ func NewTokenService(config config.TokenConfig) Token {
 	}
 }
 
-func (t *token) CreateAccessToken(cred *model.CredentialModel) (string, error) {
+func (t *token) CreateAccessToken(cred *model.UserCredential) (string, error) {
 	now := time.Now().UTC()
 	end := now.Add(t.cfg.AccessTokenLifeTime)
 	claims := MyClaims{
