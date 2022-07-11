@@ -42,7 +42,7 @@ func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		token, err := a.acctToken.VerifyAccessToken(tokenString)
+		accountDetail, err := a.acctToken.VerifyAccessToken(tokenString)
 		if err != nil {
 			c.JSON(401, gin.H{
 				"message": "Unauthorized",
@@ -50,15 +50,16 @@ func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		fmt.Println(token)
-		if token != nil {
-			c.Next()
-		} else {
+
+		// User sudah logout tetapi mengirimkan token yang sama
+		err = a.acctToken.FetchAccessToken(accountDetail)
+		if err != nil {
 			c.JSON(401, gin.H{
 				"message": "Unauthorized",
 			})
 			c.Abort()
 			return
 		}
+		c.Next()
 	}
 }

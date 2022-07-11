@@ -15,11 +15,12 @@ type authUseCase struct {
 
 func (a *authUseCase) UserAuth(user model.UserCredential) (token string, err error) {
 	if user.Username == "enigma" && user.Password == "123" {
-		token, err := a.tokenService.CreateAccessToken(&user)
+		tokenDetail, err := a.tokenService.CreateAccessToken(&user)
+		err = a.tokenService.StoreAccessToken(user.Username, tokenDetail)
 		if err != nil {
 			return "", err
 		}
-		return token, nil
+		return tokenDetail.AccessToken, nil
 	} else {
 		return "", err
 	}

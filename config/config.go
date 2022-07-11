@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type RedisConfig struct {
+	Address  string
+	Password string
+	Db       int
+}
 type ApiConfig struct {
 	ApiPort string
 	ApiHost string
@@ -18,11 +23,17 @@ type TokenConfig struct {
 }
 
 type Config struct {
+	RedisConfig
 	ApiConfig
 	TokenConfig
 }
 
 func (c Config) readConfig() Config {
+	c.RedisConfig = RedisConfig{
+		Address:  "localhost:6379",
+		Password: "",
+		Db:       0,
+	}
 	c.ApiConfig = ApiConfig{
 		ApiPort: "8888",
 		ApiHost: "localhost",

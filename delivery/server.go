@@ -8,6 +8,7 @@ import (
 	"enigmacamp.com/gojwt/utils/authenticator"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 )
 
 type Server struct {
@@ -32,7 +33,12 @@ func (s *Server) initController() {
 func NewServer() *Server {
 	c := config.NewConfig()
 	r := gin.Default()
-	tokenService := authenticator.NewAccessToken(c.TokenConfig)
+	client := redis.NewClient(&redis.Options{
+		Addr:     c.RedisConfig.Address,
+		Password: c.RedisConfig.Password,
+		DB:       c.RedisConfig.Db,
+	})
+	tokenService := authenticator.NewAccessToken(c.TokenConfig, client)
 	authUserCase := usecase.NewAuthUseCase(tokenService)
 	if c.ApiHost == "" || c.ApiPort == "" {
 		panic("No Host or port define")
