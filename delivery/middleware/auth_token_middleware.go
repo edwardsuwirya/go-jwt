@@ -14,10 +14,10 @@ type AuthTokenMiddleware interface {
 	RequireToken() gin.HandlerFunc
 }
 type authTokenMiddleware struct {
-	acctToken authenticator.Token
+	acctToken authenticator.AccessToken
 }
 
-func NewTokenValidator(acctToken authenticator.Token) AuthTokenMiddleware {
+func NewTokenValidator(acctToken authenticator.AccessToken) AuthTokenMiddleware {
 	return &authTokenMiddleware{
 		acctToken: acctToken,
 	}

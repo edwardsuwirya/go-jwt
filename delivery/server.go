@@ -14,7 +14,7 @@ type Server struct {
 	engine       *gin.Engine
 	host         string
 	authUseCase  usecase.AuthUseCase
-	tokenService authenticator.Token
+	tokenService authenticator.AccessToken
 }
 
 func (s *Server) Run() {
@@ -32,7 +32,7 @@ func (s *Server) initController() {
 func NewServer() *Server {
 	c := config.NewConfig()
 	r := gin.Default()
-	tokenService := authenticator.NewTokenService(c.TokenConfig)
+	tokenService := authenticator.NewAccessToken(c.TokenConfig)
 	authUserCase := usecase.NewAuthUseCase(tokenService)
 	if c.ApiHost == "" || c.ApiPort == "" {
 		panic("No Host or port define")

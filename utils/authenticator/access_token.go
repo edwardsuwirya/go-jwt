@@ -9,22 +9,22 @@ import (
 	"time"
 )
 
-type Token interface {
+type AccessToken interface {
 	CreateAccessToken(cred *model.UserCredential) (string, error)
 	VerifyAccessToken(tokenString string) (jwt.MapClaims, error)
 }
 
-type token struct {
+type accessToken struct {
 	cfg config.TokenConfig
 }
 
-func NewTokenService(config config.TokenConfig) Token {
-	return &token{
+func NewAccessToken(config config.TokenConfig) AccessToken {
+	return &accessToken{
 		cfg: config,
 	}
 }
 
-func (t *token) CreateAccessToken(cred *model.UserCredential) (string, error) {
+func (t *accessToken) CreateAccessToken(cred *model.UserCredential) (string, error) {
 	now := time.Now().UTC()
 	end := now.Add(t.cfg.AccessTokenLifeTime)
 	claims := MyClaims{
@@ -43,7 +43,7 @@ func (t *token) CreateAccessToken(cred *model.UserCredential) (string, error) {
 	return token.SignedString([]byte(t.cfg.JwtSignatureKey))
 }
 
-func (t *token) VerifyAccessToken(tokenString string) (jwt.MapClaims, error) {
+func (t *accessToken) VerifyAccessToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if method, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Signing method invalid")

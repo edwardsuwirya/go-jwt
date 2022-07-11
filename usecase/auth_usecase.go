@@ -10,7 +10,7 @@ type AuthUseCase interface {
 }
 
 type authUseCase struct {
-	tokenService authenticator.Token
+	tokenService authenticator.AccessToken
 }
 
 func (a *authUseCase) UserAuth(user model.UserCredential) (token string, err error) {
@@ -25,7 +25,7 @@ func (a *authUseCase) UserAuth(user model.UserCredential) (token string, err err
 	}
 }
 
-func NewAuthUseCase(service authenticator.Token) AuthUseCase {
+func NewAuthUseCase(service authenticator.AccessToken) AuthUseCase {
 	authUseCase := new(authUseCase)
 	authUseCase.tokenService = service
 	return authUseCase
