@@ -2,14 +2,9 @@ package middleware
 
 import (
 	"enigmacamp.com/gojwt/utils/authenticator"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
-type authHeader struct {
-	AuthorizationHeader string `header:"Authorization"`
-}
 type AuthTokenMiddleware interface {
 	RequireToken() gin.HandlerFunc
 }
@@ -25,24 +20,11 @@ func NewTokenValidator(acctToken authenticator.AccessToken) AuthTokenMiddleware 
 
 func (a *authTokenMiddleware) RequireToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		h := authHeader{}
-		if err := c.ShouldBindHeader(&h); err != nil {
-			c.JSON(401, gin.H{
-				"message": "Unauthorized",
-			})
-			c.Abort()
+		token, err := authenticator.BindAuthHeader(c)
+		if err != nil {
 			return
 		}
-		tokenString := strings.Replace(h.AuthorizationHeader, "Bearer ", "", -1)
-		fmt.Println(tokenString)
-		if tokenString == "" {
-			c.JSON(401, gin.H{
-				"message": "Unauthorized",
-			})
-			c.Abort()
-			return
-		}
-		accountDetail, err := a.acctToken.VerifyAccessToken(tokenString)
+		accountDetail, err := a.acctToken.VerifyAccessToken(token)
 		if err != nil {
 			c.JSON(401, gin.H{
 				"message": "Unauthorized",

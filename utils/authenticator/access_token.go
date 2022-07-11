@@ -18,6 +18,7 @@ type AccessToken interface {
 	VerifyAccessToken(tokenString string) (AccessDetails, error)
 	StoreAccessToken(userName string, tokenDetail TokenDetail) error
 	FetchAccessToken(accessDetails AccessDetails) error
+	DeleteAccessToken(accessUUID string) error
 }
 
 type accessToken struct {
@@ -47,6 +48,17 @@ func (t *accessToken) FetchAccessToken(accessDetails AccessDetails) error {
 		return err
 	}
 	if userName == "" {
+		return errors.New("Invalid token")
+	}
+	return nil
+}
+
+func (t *accessToken) DeleteAccessToken(accessUUID string) error {
+	rowAffected, err := t.client.Del(context.Background(), accessUUID).Result()
+	if err != nil {
+		return err
+	}
+	if rowAffected == 0 {
 		return errors.New("Invalid token")
 	}
 	return nil
